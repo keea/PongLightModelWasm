@@ -1,0 +1,4 @@
+.web-build/
+output/
+.devcontainer/emsdk/
+.DS_Store
