@@ -1,0 +1,39 @@
+name: DeplyWeb
+
+on:
+  push:
+    tags: '*'
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: mymindstorm/setup-emsdk@v11
+      with:
+        version: 3.1.43
+        # This is the name of the cache folder.
+        # The cache folder will be placed in the build directory,
+        #  so make sure it doesn't conflict with anything!
+        # actions-cache-folder: 'emsdk-cache'
+    - uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Configure CMake
+      run: emcmake cmake -B ${{github.workspace}}/em-build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    - name: Build
+      run: emmake cmake --build ${{github.workspace}}/em-build --config ${{env.BUILD_TYPE}}
+    - name: Depoly
+      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.ref == 'refs/heads/main' }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: ./output/web
+        commit_message: "[Web 🕸] Deploy"
